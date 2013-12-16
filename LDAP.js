@@ -120,7 +120,7 @@ var LDAP = function(opts) {
         stats.opens++;
         binding = new LDAPConnection();
         setcallbacks();
-        binding.open(opts.uri || 'ldap://localhost', (opts.version || 3), (opts.connecttimeout || -1));
+        binding.open(opts.uri || 'ldap://localhost', (opts.version || 3), (opts.connecttimeout || -1), (options.cacert || ''));
         return bind(fn); // do an anon bind to get it all ready.
     }
 

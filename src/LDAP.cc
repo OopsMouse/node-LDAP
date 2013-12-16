@@ -228,6 +228,7 @@ public:
     ARG_STR(uri, 0);
     ARG_INT(ver, 1);
     ARG_INT(timeout, 2);
+    ARG_STR(cacert, 3);
 
     LJSDEB("OPEN1 %s:%u %p %p\n", c, c->ld);
 
@@ -253,6 +254,10 @@ public:
 
     ldap_set_option(c->ld, LDAP_OPT_RESTART, LDAP_OPT_ON);
     ldap_set_option(c->ld, LDAP_OPT_PROTOCOL_VERSION, &ver);
+
+    if (cacert.length > 0) {
+      ldap_set_option(c->ld, LDAP_OPT_X_TLS_CACERTFILE, *cacert);
+    }
 
     LJSDEB("OPEN: %s:%u %p %p\n", c, c->ld);
 
