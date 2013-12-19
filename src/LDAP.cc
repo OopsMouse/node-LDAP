@@ -242,7 +242,6 @@ public:
       ntimeout.tv_sec = timeout;
     }
 
-
     ldap_set_option(NULL, LDAP_OPT_NETWORK_TIMEOUT, &ntimeout);
 
     ldap_set_option(NULL, LDAP_OPT_RESTART, LDAP_OPT_ON);
