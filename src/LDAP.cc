@@ -236,27 +236,28 @@ public:
       c->Close(args);
     }
 
-    if (ldap_initialize(&(c->ld), *uri) != LDAP_SUCCESS) {
-      THROW("Error init LDAP");
-    }
-
-    if (c->ld == NULL) {
-      THROW("Error init LDAP");
-    }
-
     struct timeval ntimeout = { timeout, 0 };
 
     if (timeout != -1) {
       ntimeout.tv_sec = timeout;
     }
 
-    ldap_set_option(c->ld, LDAP_OPT_NETWORK_TIMEOUT, &ntimeout);
 
-    ldap_set_option(c->ld, LDAP_OPT_RESTART, LDAP_OPT_ON);
-    ldap_set_option(c->ld, LDAP_OPT_PROTOCOL_VERSION, &ver);
+    ldap_set_option(NULL, LDAP_OPT_NETWORK_TIMEOUT, &ntimeout);
+
+    ldap_set_option(NULL, LDAP_OPT_RESTART, LDAP_OPT_ON);
+    ldap_set_option(NULL, LDAP_OPT_PROTOCOL_VERSION, &ver);
 
     if (cacert.length() > 0) {
-      ldap_set_option(c->ld, LDAP_OPT_X_TLS_CACERTFILE, *cacert);
+      ldap_set_option(NULL, LDAP_OPT_X_TLS_CACERTFILE, *cacert);
+    }
+
+    if (ldap_initialize(&(c->ld), *uri) != LDAP_SUCCESS) {
+      THROW("Error init LDAP");
+    }
+
+    if (c->ld == NULL) {
+      THROW("Error init LDAP");
     }
 
     LJSDEB("OPEN: %s:%u %p %p\n", c, c->ld);
