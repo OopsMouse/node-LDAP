@@ -634,8 +634,12 @@ public:
     HandleScope scope;
     GETOBJ(c);
     int msgid;
+    int ldaperror;
     char * binddn = NULL;
     char * password = NULL;
+    LDAPControl** server_ldcs = NULL;
+    LDAPControl** client_ldcs = NULL;
+    struct berval cred;
 
     LJSDEB("BIND: %s:%u %p %p\n", c, c->ld);
 
@@ -651,11 +655,12 @@ public:
       ARG_STR(j_binddn, 0);
       ARG_STR(j_password, 1);
 
-      binddn = strdup(*j_binddn);
-      password = strdup(*j_password);
+      binddn      = strdup(*j_binddn);
+      cred.bv_val = strdup(*j_password);
+      cred.bv_len = strlen(cred.bv_val);
     }
 
-    if ((msgid = ldap_simple_bind(c->ld, binddn, password)) == LDAP_SERVER_DOWN) {
+    if ((ldaperror = ldap_sasl_bind(c->ld, binddn, LDAP_SASL_SIMPLE, &cred, server_ldcs, client_ldcs, &msgid)) != LDAP_SUCCESS) {
       LJSDEB("BINDFAIL %s:%u %p %p\n", c, c->ld);
       close(c);
     } else {
@@ -664,6 +669,14 @@ public:
 
     free(binddn);
     free(password);
+
+    if (server_ldcs != NULL) {
+      ldap_controls_free(server_ldcs);
+    }
+
+    if (client_ldcs != NULL) {
+      ldap_controls_free(client_ldcs);
+    }
 
     RETURN_INT(msgid);
   }
@@ -722,7 +735,6 @@ public:
     return 0;
   }
 
-
   Local<Value> parseReply(LDAPConnection * c, LDAPMessage * msg)
   {
     HandleScope scope;
@@ -776,9 +788,9 @@ public:
             }
           }
         }
-	if ( ctrls != NULL ) {
+      	if ( ctrls != NULL ) {
           ldap_controls_free( ctrls );
-	}
+      	}
       }
       for (attrname = ldap_first_attribute(c->ld, entry, &berptr) ;
            attrname ; attrname = ldap_next_attribute(c->ld, entry, berptr)) {
